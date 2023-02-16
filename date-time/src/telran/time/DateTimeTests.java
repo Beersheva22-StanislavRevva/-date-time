@@ -7,7 +7,11 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,7 +29,7 @@ class DateTimeTests {
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MMMM,YYYY,d");
 		System.out.println(barMizvaAS.format(dtf));
 		ChronoUnit unit = ChronoUnit.MONTHS;
-		System.out.printf("Number of %s between %s and %s is %d", unit,
+		System.out.printf("Number of %s between %s and %s is %d \n \n", unit,
 				birthDateAS, barMizvaAS, unit.between(birthDateAS, barMizvaAS));
 		
 	}
@@ -52,23 +56,19 @@ class DateTimeTests {
 			date = date.with(new NextFriday13());
 		}
 		while (!date.getDayOfWeek().equals(fridayDate.getDayOfWeek()) );
-		System.out.println("\n" + "next Friday 13 - " + date);
+		System.out.println("next Friday 13 - " + date);
 	}
 
 	@Test
 	void displayCurrentDateTimeCanadaTimeZones () {
 		//displaying current local date and time for all Canada time zones
 		//displaying should contains time zone name
-		ZoneId zoneId1 = ZoneId.of("GMT-5");
-		ZoneId zoneId2 = ZoneId.of("GMT-6");
-		ZoneId zoneId3 = ZoneId.of("GMT-7");
-		LocalDateTime now = LocalDateTime.now(zoneId1);
-		System.out.println("\n" + "Time for time zone GMT-5 - " + now);
-		now = LocalDateTime.now(zoneId2);
-		System.out.println("Time for time zone GMT-6 - " + now);
-		now = LocalDateTime.now(zoneId3);
-		System.out.println("Time for time zone GMT-7 - " + now);
-		
+		List<String> list = ZoneId.getAvailableZoneIds().stream().filter(n -> n.startsWith("Canada")).sorted().toList();
+		for (String s : list) {
+			ZoneId zoneId = ZoneId.of(s);
+			System.out.printf("%s		%s \n", zoneId, LocalDateTime.now(zoneId));
+		}
+		System.out.println();
 	}
 
 }
