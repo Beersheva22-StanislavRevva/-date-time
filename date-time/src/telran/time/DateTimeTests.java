@@ -2,13 +2,13 @@
 package telran.time;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -42,20 +42,20 @@ class DateTimeTests {
 	@Test
 	void NextFriday13Test() {
 		LocalDate date = LocalDate.parse("2023-10-12");
-		LocalDate fridayDate = LocalDate.parse("2023-02-17");
-		NextFridayPrinting(date, fridayDate);
+		int dayOfWeek = 5;
+		NextFridayPrinting(date, dayOfWeek );
 		date = LocalDate.parse("2023-10-13");
-		NextFridayPrinting(date, fridayDate);
+		NextFridayPrinting(date, dayOfWeek);
 		date = LocalDate.parse("2024-09-14");
-		NextFridayPrinting(date, fridayDate);
+		NextFridayPrinting(date, dayOfWeek);
 			
 	}
 	
-	private void NextFridayPrinting(LocalDate date, LocalDate fridayDate) {
+	private void NextFridayPrinting(LocalDate date, int dayOfWeek) {
 		do {
 			date = date.with(new NextFriday13());
 		}
-		while (!date.getDayOfWeek().equals(fridayDate.getDayOfWeek()) );
+		while (date.get(ChronoField.DAY_OF_WEEK) != dayOfWeek);
 		System.out.println("next Friday 13 - " + date);
 	}
 
@@ -68,6 +68,17 @@ class DateTimeTests {
 			ZoneId zoneId = ZoneId.of(s);
 			System.out.printf("%s		%s \n", zoneId, LocalDateTime.now(zoneId));
 		}
+		System.out.println();
+	}
+	
+	@Test
+	void WorkingDaysTest() {
+		LocalDate date = LocalDate.parse("2023-02-17");
+		System.out.println("Starting date  " + date);
+		date = date.with(new WorkingDays(new DayOfWeek[]{DayOfWeek.SATURDAY}, 10));
+		System.out.println("Date + 10 working days (1 dayoff) " + date);
+		date = date.with(new WorkingDays(new DayOfWeek[]{DayOfWeek.MONDAY,DayOfWeek.TUESDAY,DayOfWeek.WEDNESDAY,DayOfWeek.THURSDAY,DayOfWeek.FRIDAY,DayOfWeek.SATURDAY,DayOfWeek.SUNDAY}, 10));
+		System.out.println("Date + 10 working days (7 dayoffs) " + date);
 		System.out.println();
 	}
 
