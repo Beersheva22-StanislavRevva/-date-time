@@ -16,6 +16,8 @@ import java.util.TimeZone;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import telran.time.application.PrintCalendar;
+
 class DateTimeTests {
 
 	@BeforeEach
@@ -59,7 +61,7 @@ class DateTimeTests {
 		System.out.println("next Friday 13 - " + date);
 	}
 
-	@Test
+	@Test     
 	void displayCurrentDateTimeCanadaTimeZones () {
 		//displaying current local date and time for all Canada time zones
 		//displaying should contains time zone name
@@ -80,6 +82,12 @@ class DateTimeTests {
 		date = date.with(new WorkingDays(new DayOfWeek[]{DayOfWeek.MONDAY,DayOfWeek.TUESDAY,DayOfWeek.WEDNESDAY,DayOfWeek.THURSDAY,DayOfWeek.FRIDAY,DayOfWeek.SATURDAY,DayOfWeek.SUNDAY}, 10));
 		System.out.println("Date + 10 working days (7 dayoffs) " + date);
 		System.out.println();
+	}
+	
+	@Test
+	void PrintCalendarTest() {
+		String[] args = new String[]{"8","2023", "friday"};
+		PrintCalendar.main(args);
 	}
 
 }
