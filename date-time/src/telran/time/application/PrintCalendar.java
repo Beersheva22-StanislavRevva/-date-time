@@ -6,7 +6,6 @@ import java.time.Month;
 import java.time.YearMonth;
 import java.time.format.TextStyle;
 import java.util.Arrays;
-import java.util.IllegalFormatException;
 import java.util.Locale;
 
 public class PrintCalendar {
@@ -15,30 +14,57 @@ public class PrintCalendar {
 	private static final int YEAR_OFFSET = 10;
 	private static final int WIDTH_FIELD = 4;
 	private static Locale locale = Locale.forLanguageTag(LANGUAGE_TAG);
-
+	private static DayOfWeek[] daysOfWeek = DayOfWeek.values();
 	public static void main(String[] args)  {
 		try {
-			int monthYear[] = getMonthYearDay(args);
-			printCalendar(monthYear[0], monthYear[1], monthYear[2]);
+			int monthYear[] = getMonthYear(args);
+			setFirstDay(args);
+			printCalendar(monthYear[0], monthYear[1]);
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
 
 	}
 
-	private static void printCalendar(int month, int year, int firstday) {
-		printTitle(month, year);
-		printWeekDays(firstday);
-		printDates(month, year, firstday);
-		
-	}        
+	private static void setFirstDay(String[] args) throws Exception {
+		DayOfWeek[] sourceDays = DayOfWeek.values();
+		int daysOnWeek = sourceDays.length;
+		DayOfWeek firstDay = sourceDays[0];
+		if (args.length > 2) {
+			try {
+				firstDay = DayOfWeek.valueOf(args[2].toUpperCase());
 
-	private static void printDates(int month, int year, int firstday) {
-		int weekDayNumber = getFirstDay(month, year) - firstday + 8;
-		if (weekDayNumber > 7) {
-			weekDayNumber = weekDayNumber % 7;
+			} catch (Exception e) {
+				throw new Exception("wrong name of week day " + args[2]);
+			}
 		}
+		if (firstDay != sourceDays[0]) {
+			{
+				
+				int dayNumber = firstDay.getValue();
+				for (int i = 0; i < daysOfWeek.length; i++) {
+					int ind = dayNumber <= daysOnWeek ? dayNumber : dayNumber - daysOnWeek;
+					daysOfWeek[i] = sourceDays[ind - 1];
+					dayNumber++;
+				}
+			}
+		}
+
+	}
+		
+	
+
+	private static void printCalendar(int month, int year) {
+		printTitle(month, year);
+		printWeekDays();
+		printDates(month, year);
+		
+	}
+
+	private static void printDates(int month, int year) {
+		 int weekDayNumber = getFirstDay(month, year);
 		int offset = getOffset(weekDayNumber);
+		
 		int nDays = YearMonth.of(year, month).lengthOfMonth();
 		System.out.printf("%s", " ".repeat(offset));
 		for(int date = 1; date <= nDays ; date++) {
@@ -53,18 +79,23 @@ public class PrintCalendar {
 
 	private static int getOffset(int weekDayNumber) {
 		
-		return weekDayNumber != 0 ? (weekDayNumber - 1) * WIDTH_FIELD : 0;
+		return (weekDayNumber - 1) * WIDTH_FIELD;
 	}
 
 	private static int getFirstDay(int month, int year) {
 		
-		return LocalDate.of(year, month, 1).getDayOfWeek().getValue();
+		LocalDate firstDateMonth = LocalDate.of(year, month, 1);
+		int firstWeekDay = firstDateMonth.getDayOfWeek().getValue();
+		int firstValue = daysOfWeek[0].getValue();
+		int delta = firstWeekDay - firstValue + 1;
+
+		return delta >= 0 ? delta : delta + daysOfWeek.length ;
 	}
 
-	private static void printWeekDays(int firstday) {
+	private static void printWeekDays() {
 		System.out.print("  ");
-		Arrays.stream(DayOfWeek.values())
-		.forEach(dw -> System.out.printf("%s ", dw.plus(firstday - 1).getDisplayName(TextStyle.SHORT, locale)));
+		Arrays.stream(daysOfWeek)
+		.forEach(dw -> System.out.printf("%s ", dw.getDisplayName(TextStyle.SHORT, locale)));
 		System.out.println();
 		
 	}
@@ -77,14 +108,14 @@ public class PrintCalendar {
 		
 	}
 
-	private static int[] getMonthYearDay(String[] args) throws Exception {
+	private static int[] getMonthYear(String[] args) throws Exception {
 		
-		return args.length == 0 ? getCurrentMonthYearDay() : getMonthYearDayArgs(args);
+		return args.length == 0 ? getCurrentMonthYear() : getMonthYearArgs(args);
 	}
 
-	private static int[] getMonthYearDayArgs(String[] args) throws Exception{
+	private static int[] getMonthYearArgs(String[] args) throws Exception{
 		
-		return new int[] {getMonthArgs(args), getYearArgs(args), getDayArgs(args)};
+		return new int[] {getMonthArgs(args), getYearArgs(args)};
 	}
 
 	private static int getYearArgs(String[] args) throws Exception{
@@ -115,23 +146,10 @@ public class PrintCalendar {
 		
 		
 	}
-	
-	private static int getDayArgs (String[] args) throws Exception{
-		int res = DayOfWeek.MONDAY.getValue();
-		if (args.length > 2) {
-			try {
-				String dayofweek = args[2].toUpperCase();
-				res = DayOfWeek.valueOf(dayofweek).getValue();
-				} catch (Exception e) {
-					throw new Exception("Invalid day name");
-				}
-		}
-		return res;
-	}
-	
-	private static int[] getCurrentMonthYearDay() {
+
+	private static int[] getCurrentMonthYear() {
 		LocalDate current = LocalDate.now();
-		return new int[] {current.getMonth().getValue(), current.getYear(),current.getDayOfWeek().getValue()};
+		return new int[] {current.getMonth().getValue(), current.getYear()};
 	}
 
 }

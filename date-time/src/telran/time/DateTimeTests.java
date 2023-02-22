@@ -2,21 +2,14 @@
 package telran.time;
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
+import java.time.temporal.TemporalAdjuster;
 import java.util.Locale;
-import java.util.TimeZone;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import telran.time.application.PrintCalendar;
 
 class DateTimeTests {
 
@@ -31,7 +24,7 @@ class DateTimeTests {
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MMMM,YYYY,d");
 		System.out.println(barMizvaAS.format(dtf));
 		ChronoUnit unit = ChronoUnit.MONTHS;
-		System.out.printf("Number of %s between %s and %s is %d \n \n", unit,
+		System.out.printf("Number of %s between %s and %s is %d", unit,
 				birthDateAS, barMizvaAS, unit.between(birthDateAS, barMizvaAS));
 		
 	}
@@ -40,54 +33,35 @@ class DateTimeTests {
 		LocalDate current = LocalDate.now();
 		assertEquals(current.plusYears(13), current.with(new BarMizvaAdjuster()));
 	}
-	
 	@Test
-	void NextFriday13Test() {
-		LocalDate date = LocalDate.parse("2023-10-12");
-		int dayOfWeek = 5;
-		NextFridayPrinting(date, dayOfWeek );
-		date = LocalDate.parse("2023-10-13");
-		NextFridayPrinting(date, dayOfWeek);
-		date = LocalDate.parse("2024-09-14");
-		NextFridayPrinting(date, dayOfWeek);
-			
-	}
-	
-	private void NextFridayPrinting(LocalDate date, int dayOfWeek) {
-		do {
-			date = date.with(new NextFriday13());
-		}
-		while (date.get(ChronoField.DAY_OF_WEEK) != dayOfWeek);
-		System.out.println("next Friday 13 - " + date);
-	}
-
-	@Test     
 	void displayCurrentDateTimeCanadaTimeZones () {
 		//displaying current local date and time for all Canada time zones
 		//displaying should contains time zone name
-		List<String> list = ZoneId.getAvailableZoneIds().stream().filter(n -> n.startsWith("Canada")).sorted().toList();
-		for (String s : list) {
-			ZoneId zoneId = ZoneId.of(s);
-			System.out.printf("%s		%s \n", zoneId, LocalDateTime.now(zoneId));
-		}
-		System.out.println();
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm VV");
+		Instant currentTime = Instant.now();
+		ZoneId.getAvailableZoneIds().stream()
+		.filter(tz -> tz.toLowerCase().contains("canada"))
+		.forEach(tz -> System.out.printf("%s %s\n",
+				LocalDateTime.ofInstant(currentTime, ZoneId.of(tz))
+				.format(DateTimeFormatter.ofPattern("YYYY-M-d H:m:s")), tz));
+		ZoneId.getAvailableZoneIds().stream()
+		.filter(zoneId -> zoneId.contains("Canada"))
+		.map(ZoneId::of)
+		.map(Instant.now()::atZone)
+		.map(dateTime -> dateTime.format(dtf))
+		.sorted().forEach(System.out::println);
 	}
-	
 	@Test
-	void WorkingDaysTest() {
-		LocalDate date = LocalDate.parse("2023-02-17");
-		System.out.println("Starting date  " + date);
-		date = date.with(new WorkingDays(new DayOfWeek[]{DayOfWeek.SATURDAY}, 10));
-		System.out.println("Date + 10 working days (1 dayoff) " + date);
-		date = date.with(new WorkingDays(new DayOfWeek[]{DayOfWeek.MONDAY,DayOfWeek.TUESDAY,DayOfWeek.WEDNESDAY,DayOfWeek.THURSDAY,DayOfWeek.FRIDAY,DayOfWeek.SATURDAY,DayOfWeek.SUNDAY}, 10));
-		System.out.println("Date + 10 working days (7 dayoffs) " + date);
-		System.out.println();
+	void nextFriday13test() {
+		TemporalAdjuster nextFriday13 = new NextFriday13();
+		assertEquals(LocalDate.of(2023, 1, 13), LocalDate.of(2023, 1, 12)
+				.with(nextFriday13));
+		assertEquals(LocalDate.of(2023, 10, 13), LocalDate.of(2023, 1, 13).with(nextFriday13));
 	}
-	
 	@Test
-	void PrintCalendarTest() {
-		String[] args = new String[]{"8","2023", "friday"};
-		PrintCalendar.main(args);
+	void wrkingDaysTest() {
+		System.out.println(LocalDate.now()
+				.with(new WorkingDays(new DayOfWeek[] {DayOfWeek.SATURDAY}, 5000)));
 	}
 
 }
